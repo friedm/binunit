@@ -1,0 +1,11 @@
+void main(void) {
+   printf("thing");
+}
+
+[Test]
+void some_test(void) {
+}
+
+[Test]
+void some_test() {
+}
