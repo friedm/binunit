@@ -2,3 +2,6 @@
 name = "punit"
 version = "0.1.0"
 authors = ["Matt Friedman <matthew.friedman@mu.edu>"]
+
+[dependencies]
+regex = "0.1.8"
