@@ -1,10 +1,9 @@
 #![deny(warnings)]
 
-extern crate regex;
-
-use regex::Regex;
+mod test;
 
 fn main() {
-    let re = Regex::new(r"").unwrap();
-    println!("stuff!");
+    test::make_test_source(
+        &std::env::current_dir().unwrap()
+        );
 }
