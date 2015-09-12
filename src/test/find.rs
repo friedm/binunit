@@ -29,7 +29,7 @@ fn is_hidden_path(path: &PathBuf) -> bool {
 }
 
 fn has_src_extension(path: &PathBuf) -> bool {
-    let supported_src_extensions = regex!(r"c|rs");
+    let supported_src_extensions = regex!(r"c");
 
     match path.extension() {
         Some(ext) =>
