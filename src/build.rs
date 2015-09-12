@@ -1,8 +1,12 @@
-use std::io::prelude::*;
-use std::fs;
-use std::fs::File;
-use std::path::PathBuf;
 use std::env;
+use std::fs::File;
+use std::fs;
+use std::io::prelude::*;
+use std::io;
+use std::path::PathBuf;
+use std::process::Command;
+use std::process::ExitStatus;
+
 
 pub fn write_to_tmp(generated_src: &String) {
 
@@ -28,7 +32,17 @@ fn write_to(file_path: &PathBuf, to_write: &String) {
     f.sync_data().unwrap();
 }
 
-pub fn build() {
+pub fn build() -> Result<ExitStatus, io::Error> {
+
+    Command::new("gcc")
+        .current_dir(&setup_tmp_dir(".punit_tmp"))
+        .arg("-o")
+        .arg("punit")
+        .arg("punit_main.c")
+        .arg("punit.c")
+        .arg("--entry=punit_main")
+        .arg("-nostartfiles")
+        .status()
 }
 
 #[cfg(test)]
@@ -87,15 +101,10 @@ mod test {
     }
 
     #[test]
-    fn write_to_tmp() {
+    fn build() {
 
-        super::write_to_tmp(&"this string is written to punit.c\n".to_owned());
-
-        let tmp_dir = dir(".punit_tmp");
-
-        assert!(dir_exists(&tmp_dir));
-        assert!(file_exists(&tmp_dir.join("punit.c")));
-        assert!(file_exists(&tmp_dir.join("punit.h")));
-        assert!(file_exists(&tmp_dir.join("punit_main.c")));
+        super::write_to_tmp(&"void punit_run_tests(void){}\n".to_owned());
+        super::build().unwrap();
+        assert!(file_exists(&dir(".punit_tmp").join("punit")));
     }
 }
