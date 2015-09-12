@@ -4,17 +4,24 @@
 pub fn generate_test(fn_list: &Vec<String>) -> String {
 
     format!("{}\n\nvoid main(void) {{\n{}\n}}\n", 
-            format_and_concat(|label| format!("\nvoid {}(void);", label), fn_list),
-            format_and_concat(|label| format!("\n\t{}();", label), &fn_list.clone()))
+            fn_list.map_and_concat(|label| format!("\nvoid {}(void);", label)),
+            fn_list.map_and_concat(|label| format!("\n\t{}();", label)))
         .to_owned()
 }
 
-fn format_and_concat<F>(apply_format: F, fn_list: &Vec<String>) -> String
-    where F : Fn(&String) -> String {
+trait MapConcat {
+    fn map_and_concat<F>(&self, mapper: F) -> String 
+        where F : Fn(&String) -> String;
+}
 
-    fn_list.iter()
-        .map(apply_format)
-        .fold(String::new(), |a,b| format!("{}{}", a, b))
+impl MapConcat for Vec<String> {
+    fn map_and_concat<F>(&self, mapper: F) -> String 
+        where F : Fn(&String) -> String {
+
+        self.iter()
+            .map(mapper)
+            .fold(String::new(), |a,b| format!("{}{}", a, b))
+    }
 }
 
 #[cfg(test)]
@@ -23,21 +30,25 @@ mod test {
 
     #[test]
     fn main_test() {
+
         assert_generated_contains("void main(void)", test_fn_list());
     }
 
     fn assert_generated_contains(contents: &str, fn_list: Vec<&'static str>) {
+
         let actual = super::generate_test(&fn_list.to_owned_vec());
         println!("generated: {}", actual);
         assert!(actual.contains(contents));
     }
 
     fn test_fn_list() -> Vec<&'static str> {
+
         vec!["fn1", "fn2"]
     }
 
     #[test]
     fn call_test() {
+
         for fn_id in test_fn_list() {
             assert_generated_contains(&format!("{}();", fn_id)[..], test_fn_list());
         }
@@ -45,6 +56,7 @@ mod test {
 
     #[test]
     fn define_test() {
+
         for fn_id in test_fn_list() {
             assert_generated_contains(&format!("void {}(void);", fn_id)[..], test_fn_list());
         }
