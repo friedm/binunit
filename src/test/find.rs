@@ -1,6 +1,6 @@
 use std::io::prelude::*;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 extern crate regex;
 
@@ -47,7 +47,6 @@ fn load(path: &PathBuf) -> String {
 
 #[cfg(test)]
 mod test {
-    use std::fs;
     use std::path;
 
     #[test]

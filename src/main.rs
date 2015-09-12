@@ -1,8 +1,10 @@
+#![deny(warnings)]
+
 #![feature(plugin)]
-#![plugin(regex_macros)]
 #![feature(fs_walk)]
-//#![deny(warnings)]
-//
+
+#![plugin(regex_macros)]
+
 
 extern crate regex;
 
