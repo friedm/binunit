@@ -1,95 +1,155 @@
+use regex;
 
 pub fn parse_testfn_list(files: &Vec<String>) -> Vec<String> {
+    let parser = Parser::new();
+
     files.iter()
-        .map(|file| parse_testfn_labels(file))
+        .map(|file| parser.parse_labels(file))
         .fold(Vec::new(), |mut a, b| { a.extend(b); a })
 }
 
-fn parse_testfn_labels(file: &String) -> Vec<String> {
-    let mut result: Vec<String> = Vec::new();
-        
-    let test_fn_regex = regex!(r"(?xm)
-        ///             #c-style comment with extra slash
-        .*              #any number of non-newlines
-        \[test\].*      #test tag
-        \s*void\s+      #require void return type
-        (\w+)           #capture function identifier
-        \s*\(\s*        #start of parameter list
-        (\s*|void)      #match void or empty parameters
-        \s*\)\s*        #end of parameter list
-        \{.*            #require open brace (only match definitions)
-        ");
+struct Parser {
+    fn_label_regex: regex::Regex
+}
 
-    for regex_match in test_fn_regex.captures_iter(file) {
-        println!("match {}", regex_match.at(0).unwrap());
-        println!("cap {}", regex_match.at(1).unwrap());
-        result.push(String::from(regex_match.at(1).unwrap()));
+impl Parser {
+    pub fn new() -> Parser {
+        Parser {
+            fn_label_regex: Self::label_regex()
+        }
     }
 
-    result
+    fn label_regex() -> regex::Regex {
+        regex!(r"(?x) #set ignore-whitespace mode
+            ///             #c-style comment with extra slash
+            .*              #any number of non-newlines
+            \[test\].*      #test tag
+            \s*void\s+      #require void return type
+            (\w+)           #capture function identifier
+            \s*\(\s*        #start of parameter list
+            (\s*|void)      #match void or empty parameters
+            \s*\)\s*        #end of parameter list
+            \{.*            #require open brace (only match definitions)
+            ")
+    }
+
+    pub fn parse_labels(&self, file: &String) -> Vec<String> {
+        self.fn_label_regex.captures_iter(file)
+            .map(|regex_match| String::from(regex_match.at(1).unwrap()))
+            .collect::<Vec<_>>()
+    }
 }
 
 #[cfg(test)]
 mod test {
+    trait ToOwnedStringVec {
+        fn to_owned_vec(&self) -> Vec<String>;
+    }
+
+    impl ToOwnedStringVec for Vec<&'static str> {
+        fn to_owned_vec(&self) -> Vec<String> {
+            self.iter()
+                .map(|&item| item.to_owned())
+                .collect()
+        }
+    }
+
     #[test]
-    fn parse_testfn_list() {
-        let source: Vec<String> = vec!["
-            void some_function(void) {
-            }
-
-            void other_function () {
-            }
-
-            ///[test]
-            void test_function() {
-            }
-
-            ///[test]
-            void other_test_function (void) {
-            }
-
-            ///[test]
-            void inner_scope() {
-                does stuff;
-                other stuff;
-
-                if (something) {
-                    more stuff;
+    fn good_fn() {
+        assert_correct_labels_generated(
+            vec![
+                "test_function",
+                "inner_scope",
+                "brace_style",
+                "no_close_delim",
+                "void_arg"
+            ],
+            vec!["
+                void some_function(void) {
                 }
 
-            }
+                void other_function () {
+                }
 
-            ///[test]
-            void incorrect_brace_style()
-            {
-            }
+                ///[test]
+                void test_function() {
+                }
 
-            ///[test]
-            void missing_close_delim() {
+                ///[test]
+                void inner_scope() {
+                    { }
+                }
 
-            ///[test]
-            int bad_test_function() {
-            }
+                ///[test]
+                void brace_style()
+                {
+                }
 
-            ///[test]
-            void bad_args(thing) {
-            }
+                ///[test]
+                void no_close_delim() {
+                }
 
-           
-            ".to_owned()];
+                ///[test]
+                void void_arg(void) {
+                }
+            "]
+            );
+    }
 
-        let actual_labels = super::parse_testfn_list(&source);
-
-        let expected_labels = vec!["test_function".to_owned(),
-                                   "other_test_function".to_owned(),
-                                   "incorrect_brace_style".to_owned(),
-                                   "inner_scope".to_owned(),
-                                   "missing_close_delim".to_owned()];
+    fn assert_correct_labels_generated(expected: Vec<&'static str>, actual: Vec<&'static str>) {
+        let actual_labels = super::parse_testfn_list(&actual.to_owned_vec());
+        let expected_labels = expected.to_owned_vec();
 
         assert_eq!(expected_labels.len(), actual_labels.len());
         for label in expected_labels {
             assert!(actual_labels.contains(&label));
         }
+
+    }
+
+    #[test]
+    fn bad_fn() {
+        assert_correct_labels_generated(
+            vec![],
+            vec!["
+                void normal_fn() {
+                }
+
+                ///[test]
+                int non_void() {
+                }
+
+                ///[test]
+                void parameters(thing) {
+                }
+            "]
+            );
+    }
+
+    #[test]
+    fn multi_source() {
+        assert_correct_labels_generated(
+            vec![
+                "source1_fn1",
+                "source1_fn2",
+                "source2_fn1",
+                "source2_fn2"
+            ],
+            vec![
+                "
+                    ///[test]
+                    void source1_fn1() {}
+                    ///[test]
+                    void source1_fn2() {}
+                ",
+                "
+                    ///[test]
+                    void source2_fn1() {}
+                    ///[test]
+                    void source2_fn2() {}
+                "
+            ]
+            );
     }
 }
  
