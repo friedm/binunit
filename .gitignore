@@ -4,3 +4,6 @@ target/*
 tags
 *punit.c
 a.out
+*.o
+*.a
+punit
