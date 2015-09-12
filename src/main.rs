@@ -5,13 +5,10 @@
 
 #![plugin(regex_macros)]
 
-
 extern crate regex;
 
 mod test;
-
-use std::io::prelude::*;
-use std::fs::File;
+mod build;
 
 trait ToOwnedStringVec {
     fn to_owned_vec(&self) -> Vec<String>;
@@ -26,10 +23,10 @@ impl ToOwnedStringVec for Vec<&'static str> {
 }
 
 fn main() {
-    let src = test::make_test_source(
+    let generated_src = test::make_test_source(
         &std::env::current_dir().unwrap()
         );
 
-    let mut f = File::create("punit.c").unwrap();
-    f.write_all(&src.into_bytes()[..]).unwrap();
+    build::write_to_tmp(&generated_src);
+    build::build();
 }

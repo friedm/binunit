@@ -7,3 +7,5 @@ a.out
 *.o
 *.a
 punit
+.punit_tmp
+.*
