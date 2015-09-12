@@ -3,9 +3,9 @@
 /// from a list of test function names.
 pub fn generate_test(fn_list: &Vec<String>) -> String {
 
-    format!("{}\n\nvoid main(void) {{\n{}\n}}\n", 
+    format!("{}\n\nvoid punit_run_tests(void) {{\n{}\n}}\n", 
             fn_list.map_and_concat(|label| format!("\nextern void {}(void) __attribute__((weak));", label)),
-            fn_list.map_and_concat(|label| format!("\n\tif ({0}) {0}();", label)))
+            fn_list.map_and_concat(|label| format!("\n\tpunit_run_test({0});", label)))
         .to_owned()
 }
 
@@ -31,7 +31,7 @@ mod test {
     #[test]
     fn main_test() {
 
-        assert_generated_contains("void main(void)", test_fn_list());
+        assert_generated_contains("void punit_run_tests(void)", test_fn_list());
     }
 
     fn assert_generated_contains(contents: &str, fn_list: Vec<&'static str>) {
@@ -50,7 +50,7 @@ mod test {
     fn call_test() {
 
         for fn_id in test_fn_list() {
-            assert_generated_contains(&format!("if ({0}) {0}();", fn_id)[..], test_fn_list());
+            assert_generated_contains(&format!("punit_run_test({0});", fn_id)[..], test_fn_list());
         }
     }
 

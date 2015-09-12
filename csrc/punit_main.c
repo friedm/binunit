@@ -3,12 +3,12 @@
 
 #include "punit.h"
 
-void run(void (*fn)(), char *name) {
+void punit_run_test(void (*fn)(), char *name) {
    if (fn) fn();
-   else printf("Could not link %s\n", name);
+   else printf("%s: could not link\n", name);
 }
 
 void punit_main(void) {
-   run_tests();
+   punit_run_tests();
    exit(0);
 }
