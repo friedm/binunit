@@ -29,13 +29,14 @@ fn main() {
         &std::env::current_dir().unwrap()
         );
 
-    build::write_to_tmp(&generated_src);
-    match build::build() {
+    let work_dir = build::WorkingDir::new(".punit_tmp");
+    work_dir.write_to_tmp(&generated_src);
+    match work_dir.build() {
         Ok(status) => match status.code() {
             Some(0) => (),
             Some(code) => println!("gcc returned nonzero exit status: {}", code),
             None => println!("gcc command failed")
             },
-        Err(e) => println!("gcc command failed: {}", e)
+        Err(e) => println!("gcc command failed: {}\n\tgcc may be missing", e)
     }
 }
