@@ -54,6 +54,13 @@ impl WorkingDir {
             .arg("-nostartfiles")
             .status()
     }
+
+    pub fn run(&self) -> Result<ExitStatus, io::Error> {
+        
+        Command::new("./punit")
+            .current_dir(&self.dir)
+            .status()
+    }
 }
 
 #[cfg(test)]
@@ -119,4 +126,14 @@ mod test {
         dir.build().unwrap();
         assert!(file_exists(&make_dir(".punit_tmp").join("punit")));
     }
+
+    #[test]
+    fn run() {
+
+        let dir = super::WorkingDir::new(".test_run");
+        dir.write_to_tmp(&"void punit_run_tests(void){}\n".to_owned());
+        dir.build().unwrap();
+        dir.run().unwrap();
+    }
 }
+
