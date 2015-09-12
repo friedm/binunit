@@ -3,9 +3,10 @@
 /// from a list of test function names.
 pub fn generate_test(fn_list: &Vec<String>) -> String {
 
-    format!("{}\n\nvoid punit_run_tests(void) {{\n{}\n}}\n", 
+    format!("{}{}\n\nvoid punit_run_tests(void) {{\n{}\n}}\n", 
+            "#include \"punit.h\"\n",
             fn_list.map_and_concat(|label| format!("\nextern void {}(void) __attribute__((weak));", label)),
-            fn_list.map_and_concat(|label| format!("\n\tpunit_run_test({0});", label)))
+            fn_list.map_and_concat(|label| format!("\n\tpunit_run_test({0}, \"{0}\");", label)))
         .to_owned()
 }
 
@@ -50,7 +51,7 @@ mod test {
     fn call_test() {
 
         for fn_id in test_fn_list() {
-            assert_generated_contains(&format!("punit_run_test({0});", fn_id)[..], test_fn_list());
+            assert_generated_contains(&format!("punit_run_test({0}, \"{0}\");", fn_id)[..], test_fn_list());
         }
     }
 
@@ -60,5 +61,11 @@ mod test {
         for fn_id in test_fn_list() {
             assert_generated_contains(&format!("extern void {}(void) __attribute__((weak));", fn_id)[..], test_fn_list());
         }
+    }
+
+    #[test]
+    fn include_test() {
+
+        assert_generated_contains("#include \"punit.h\"\n", test_fn_list());
     }
 }
