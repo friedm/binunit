@@ -42,17 +42,7 @@ impl Parser {
 
 #[cfg(test)]
 mod test {
-    trait ToOwnedStringVec {
-        fn to_owned_vec(&self) -> Vec<String>;
-    }
-
-    impl ToOwnedStringVec for Vec<&'static str> {
-        fn to_owned_vec(&self) -> Vec<String> {
-            self.iter()
-                .map(|&item| item.to_owned())
-                .collect()
-        }
-    }
+    use ToOwnedStringVec;
 
     #[test]
     fn good_fn() {
@@ -92,8 +82,7 @@ mod test {
                 ///[test]
                 void void_arg(void) {
                 }
-            "]
-            );
+            "]);
     }
 
     fn assert_correct_labels_generated(expected: Vec<&'static str>, actual: Vec<&'static str>) {
@@ -122,8 +111,7 @@ mod test {
                 ///[test]
                 void parameters(thing) {
                 }
-            "]
-            );
+            "]);
     }
 
     #[test]
@@ -148,8 +136,7 @@ mod test {
                     ///[test]
                     void source2_fn2() {}
                 "
-            ]
-            );
+            ]);
     }
 }
  
