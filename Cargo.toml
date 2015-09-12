@@ -5,3 +5,4 @@ authors = ["Matt Friedman <matthew.friedman@mu.edu>"]
 
 [dependencies]
 regex = "0.1.8"
+regex_macros = "0.1.8"

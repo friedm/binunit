@@ -1,4 +1,10 @@
-#![deny(warnings)]
+#![feature(plugin)]
+#![plugin(regex_macros)]
+#![feature(fs_walk)]
+//#![deny(warnings)]
+//
+
+extern crate regex;
 
 mod test;
 
