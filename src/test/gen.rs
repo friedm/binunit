@@ -4,8 +4,8 @@
 pub fn generate_test(fn_list: &Vec<String>) -> String {
 
     format!("{}\n\nvoid main(void) {{\n{}\n}}\n", 
-            fn_list.map_and_concat(|label| format!("\nvoid {}(void);", label)),
-            fn_list.map_and_concat(|label| format!("\n\t{}();", label)))
+            fn_list.map_and_concat(|label| format!("\nextern void {}(void) __attribute__((weak));", label)),
+            fn_list.map_and_concat(|label| format!("\n\tif ({0}) {0}();", label)))
         .to_owned()
 }
 
@@ -50,7 +50,7 @@ mod test {
     fn call_test() {
 
         for fn_id in test_fn_list() {
-            assert_generated_contains(&format!("{}();", fn_id)[..], test_fn_list());
+            assert_generated_contains(&format!("if ({0}) {0}();", fn_id)[..], test_fn_list());
         }
     }
 
@@ -58,7 +58,7 @@ mod test {
     fn define_test() {
 
         for fn_id in test_fn_list() {
-            assert_generated_contains(&format!("void {}(void);", fn_id)[..], test_fn_list());
+            assert_generated_contains(&format!("extern void {}(void) __attribute__((weak));", fn_id)[..], test_fn_list());
         }
     }
 }

@@ -3,3 +3,4 @@ target/*
 *.swo
 tags
 *punit.c
+a.out
