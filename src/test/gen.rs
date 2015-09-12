@@ -2,15 +2,19 @@
 /// Generate a source file for the test executable
 /// from a list of test function names.
 pub fn generate_test(fn_list: &Vec<String>) -> String {
-    let mut call_list = String::new();
 
-    for fn_id in fn_list {
-        call_list = format!("{}\n\t{}();", call_list, fn_id);
-    }
+    format!("{}\n\nvoid main(void) {{\n{}\n}}\n", 
+            format_and_concat(|label| format!("\nvoid {}(void);", label), fn_list),
+            format_and_concat(|label| format!("\n\t{}();", label), &fn_list.clone()))
+        .to_owned()
+}
 
-    return format!("void main(void) {{
-    {}
-}}\n", call_list).to_owned();
+fn format_and_concat<F>(apply_format: F, fn_list: &Vec<String>) -> String
+    where F : Fn(&String) -> String {
+
+    fn_list.iter()
+        .map(apply_format)
+        .fold(String::new(), |a,b| format!("{}{}", a, b))
 }
 
 #[cfg(test)]
@@ -18,16 +22,31 @@ mod test {
     use ToOwnedStringVec;
 
     #[test]
-    fn test() {
-        let fn_list = vec!["fn1", "fn2"].to_owned_vec();
+    fn main_test() {
+        assert_generated_contains("void main(void)", test_fn_list());
+    }
 
-        let actual = super::generate_test(&fn_list);
+    fn assert_generated_contains(contents: &str, fn_list: Vec<&'static str>) {
+        let actual = super::generate_test(&fn_list.to_owned_vec());
         println!("generated: {}", actual);
+        assert!(actual.contains(contents));
+    }
 
-        assert!(actual.contains("void main(void)"));
+    fn test_fn_list() -> Vec<&'static str> {
+        vec!["fn1", "fn2"]
+    }
 
-        for fn_id in fn_list.iter() {
-            assert!(actual.contains(&format!("{}();", fn_id)[..]));
+    #[test]
+    fn call_test() {
+        for fn_id in test_fn_list() {
+            assert_generated_contains(&format!("{}();", fn_id)[..], test_fn_list());
+        }
+    }
+
+    #[test]
+    fn define_test() {
+        for fn_id in test_fn_list() {
+            assert_generated_contains(&format!("void {}(void);", fn_id)[..], test_fn_list());
         }
     }
 }
