@@ -12,33 +12,30 @@ pub fn recursive_read(dir_path: &PathBuf) -> Vec<String > {
 }
 
 fn walk_find_source_files(dir_path: &PathBuf) -> Vec<PathBuf> {
-    let mut files = Vec::new();
+    fs::walk_dir(dir_path).unwrap()
+        .map(|path| path.unwrap().path())
+        .filter(|path| !is_hidden_path(&path))
+        .filter(|path| has_src_extension(&path))
+        .collect()
+}
 
+fn is_hidden_path(path: &PathBuf) -> bool {
     let hidden_path_regex = regex!(r"/\.");
+
+    let path = path.clone().into_os_string();
+    let path = path.to_str().unwrap();
+
+    hidden_path_regex.is_match(path)
+}
+
+fn has_src_extension(path: &PathBuf) -> bool {
     let supported_src_extensions = regex!(r"c|rs");
 
-    for path in fs::walk_dir(dir_path).unwrap() {
-        let path = path.unwrap().path();
-        let path_os_string = path.clone().into_os_string();
-        let path_string = path_os_string.to_str().unwrap();
-
-        if hidden_path_regex.is_match(path_string) {
-            continue;
-        }
-
-        match path.extension() {
-            Some(ext) => {
-                if supported_src_extensions.is_match(ext.to_str().unwrap()) {
-                    files.push(path.clone());
-                }
-            },
-            None => ()
-        }
+    match path.extension() {
+        Some(ext) =>
+            supported_src_extensions.is_match(ext.to_str().unwrap()),
+        None => false
     }
-
-
-
-    files
 }
 
 fn load(path: &PathBuf) -> String {
