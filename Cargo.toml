@@ -3,6 +3,14 @@ name = "binunit"
 version = "0.1.0"
 authors = ["Matt Friedman <matthew.friedman@mu.edu>"]
 
+[lib]
+name = "binunit"
+path = "src/lib/mod.rs"
+
+[[bin]]
+name = "binunit"
+path = "src/main.rs"
+
 [dependencies]
 regex = "0.1.8"
 regex_macros = "0.1.8"

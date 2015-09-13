@@ -1,9 +1,32 @@
+#![deny(warnings)]
+
+#![feature(plugin)]
+#![feature(fs_walk)]
+#![feature(path_relative_from)]
+
+#![plugin(regex_macros)]
+
 pub mod find;
 mod parse;
 mod gen;
 mod build;
 
+extern crate regex;
+
 use std::path::PathBuf;
+
+trait ToOwnedStringVec {
+    fn to_owned_vec(&self) -> Vec<String>;
+}
+
+impl ToOwnedStringVec for Vec<&'static str> {
+    fn to_owned_vec(&self) -> Vec<String> {
+
+        self.iter()
+            .map(|&item| item.to_owned())
+            .collect()
+    }
+}
 
 pub struct BinUnit {
     exec_dir: PathBuf
