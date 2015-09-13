@@ -16,7 +16,9 @@ fn testc_no_compile() {
 
     println!("output:\n{}", output);
     assert!(output.contains("test_pass: could not link"));
+    assert!(!output.contains("test_pass: ok"));
     assert!(output.contains("test_fail: could not link"));
+    assert!(!output.contains("test_fail: failed"));
 }
 
 #[test]

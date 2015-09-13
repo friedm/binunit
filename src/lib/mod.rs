@@ -46,14 +46,15 @@ impl BinUnit {
         let generated_src = self.make_test_source();
 
         let test_targets = find::DirWalker::new(&self.exec_dir, 
-            regex!(r"^(o|a|so)&"));
+            regex!(r"^(o|a|so)$"));
+        let test_targets = test_targets.walk_map(|path| {
+            path.relative_from(&self.exec_dir).unwrap().to_str().unwrap().to_owned()
+            });
 
-        let work_dir = build::WorkingDir::new(".binunit_tmp");
+        let work_dir = build::WorkingDir::new(".binunit_tmp", &self.exec_dir);
 
         work_dir.write_to_tmp(&generated_src);
-        match work_dir.build(&test_targets.walk_map(|path| {
-            path.relative_from(&self.exec_dir).unwrap().to_str().unwrap().to_owned()
-            })) {
+        match work_dir.build(&test_targets) {
 
             Ok(status) => match status.code() {
                 Some(0) => {

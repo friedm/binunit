@@ -3,19 +3,22 @@ use std::fs::File;
 use std::fs;
 use std::io::prelude::*;
 use std::io;
+use std::fmt;
 use std::path::PathBuf;
 use std::process::{Command, ExitStatus, Output};
 
 
 pub struct WorkingDir {
-    dir: PathBuf
+    work_dir: PathBuf,
+    exec_dir: PathBuf 
 }
 
 impl WorkingDir {
-    pub fn new(dir: &str) -> WorkingDir {
+    pub fn new(work_dir: &str, exec_dir: &PathBuf) -> WorkingDir {
 
         WorkingDir {
-            dir: Self::setup_tmp_dir(&dir.to_owned()[..])
+            work_dir: Self::setup_tmp_dir(&work_dir.to_owned()[..]),
+            exec_dir: exec_dir.clone()
         }
     }
 
@@ -29,9 +32,9 @@ impl WorkingDir {
 
     pub fn write_to_tmp(&self, generated_src: &String) {
 
-        Self::write_to(&self.dir.join("binunit_gen.c"), generated_src);
-        Self::write_to(&self.dir.join("binunit.h"), &include_str!("../../csrc/binunit.h").to_owned());
-        Self::write_to(&self.dir.join("binunit_main.c"), &include_str!("../../csrc/binunit_main.c").to_owned());
+        Self::write_to(&self.work_dir.join("binunit_gen.c"), generated_src);
+        Self::write_to(&self.work_dir.join("binunit.h"), &include_str!("../../csrc/binunit.h").to_owned());
+        Self::write_to(&self.work_dir.join("binunit_main.c"), &include_str!("../../csrc/binunit_main.c").to_owned());
     }
 
     fn write_to(file_path: &PathBuf, to_write: &String) {
@@ -43,20 +46,27 @@ impl WorkingDir {
 
     pub fn build(&self, test_targets: &Vec<String>) -> Result<ExitStatus, io::Error> {
 
+        Self::debug("targets", test_targets);
         Command::new("gcc")
+            .current_dir(&self.exec_dir)
             .arg("-o")
-            .arg(&self.dir.join("binunit").to_str().unwrap())
-            .arg(&self.dir.join("binunit_main.c").to_str().unwrap())
-            .arg(&self.dir.join("binunit_gen.c").to_str().unwrap())
+            .arg(&self.work_dir.join("binunit").to_str().unwrap())
+            .arg(&self.work_dir.join("binunit_main.c").to_str().unwrap())
+            .arg(&self.work_dir.join("binunit_gen.c").to_str().unwrap())
             .args(&test_targets[..])
             .arg("--entry=binunit_main")
             .arg("-nostartfiles")
             .status()
     }
 
+    fn debug<T>(label: &'static str, debug: T) where T : fmt::Debug {
+        println!("{}: {:?}", label, debug);
+    }
+
     pub fn run(&self) -> Result<Output, io::Error> {
         
-        Command::new(&self.dir.join("binunit").to_str().unwrap())
+        Command::new(&self.work_dir.join("binunit").to_str().unwrap())
+            .current_dir(&self.exec_dir)
             .output()
     }
 }
@@ -120,7 +130,7 @@ mod test {
     #[test]
     fn build() {
 
-        let dir = super::WorkingDir::new(".binunit_tmp");
+        let dir = super::WorkingDir::new(".binunit_tmp", &make_dir("."));
         dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
         dir.build(&Vec::new()).unwrap();
         assert!(file_exists(&make_dir(".binunit_tmp").join("binunit")));
@@ -129,7 +139,7 @@ mod test {
     #[test]
     fn run() {
 
-        let dir = super::WorkingDir::new(".test_run");
+        let dir = super::WorkingDir::new(".test_run", &make_dir("."));
         dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
         dir.build(&vec!["tests/testc/passfail.c"].to_owned_vec()).unwrap();
         dir.run().unwrap();
