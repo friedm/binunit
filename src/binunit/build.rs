@@ -30,9 +30,9 @@ impl WorkingDir {
 
     pub fn write_to_tmp(&self, generated_src: &String) {
 
-        Self::write_to(&self.dir.join("punit.c"), generated_src);
-        Self::write_to(&self.dir.join("punit.h"), &include_str!("../../csrc/punit.h").to_owned());
-        Self::write_to(&self.dir.join("punit_main.c"), &include_str!("../../csrc/punit_main.c").to_owned());
+        Self::write_to(&self.dir.join("binunit_gen.c"), generated_src);
+        Self::write_to(&self.dir.join("binunit.h"), &include_str!("../../csrc/binunit.h").to_owned());
+        Self::write_to(&self.dir.join("binunit_main.c"), &include_str!("../../csrc/binunit_main.c").to_owned());
     }
 
     fn write_to(file_path: &PathBuf, to_write: &String) {
@@ -46,18 +46,18 @@ impl WorkingDir {
 
         Command::new("gcc")
             .arg("-o")
-            .arg(&self.dir.join("punit").to_str().unwrap())
-            .arg(&self.dir.join("punit_main.c").to_str().unwrap())
-            .arg(&self.dir.join("punit.c").to_str().unwrap())
+            .arg(&self.dir.join("binunit").to_str().unwrap())
+            .arg(&self.dir.join("binunit_main.c").to_str().unwrap())
+            .arg(&self.dir.join("binunit_gen.c").to_str().unwrap())
             .args(&test_targets[..])
-            .arg("--entry=punit_main")
+            .arg("--entry=binunit_main")
             .arg("-nostartfiles")
             .status()
     }
 
     pub fn run(&self) -> Result<ExitStatus, io::Error> {
         
-        Command::new(&self.dir.join("punit").to_str().unwrap())
+        Command::new(&self.dir.join("binunit").to_str().unwrap())
             .status()
     }
 }
@@ -121,17 +121,17 @@ mod test {
     #[test]
     fn build() {
 
-        let dir = super::WorkingDir::new(".punit_tmp");
-        dir.write_to_tmp(&"void punit_run_tests(void){}\n".to_owned());
+        let dir = super::WorkingDir::new(".binunit_tmp");
+        dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
         dir.build(&Vec::new()).unwrap();
-        assert!(file_exists(&make_dir(".punit_tmp").join("punit")));
+        assert!(file_exists(&make_dir(".binunit_tmp").join("binunit")));
     }
 
     #[test]
     fn run() {
 
         let dir = super::WorkingDir::new(".test_run");
-        dir.write_to_tmp(&"void punit_run_tests(void){}\n".to_owned());
+        dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
         dir.build(&vec!["test/main.c"].to_owned_vec()).unwrap();
         dir.run().unwrap();
     }

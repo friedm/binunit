@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "punit.h"
+#include "binunit.h"
 
-void punit_run_test(void (*fn)(), char *name) {
+void binunit_run_test(void (*fn)(), char *name) {
    if (fn) fn();
    else printf("%s: could not link\n", name);
 }
 
-void punit_main(void) {
-   punit_run_tests();
+void binunit_main(void) {
+   binunit_run_tests();
    exit(0);
 }

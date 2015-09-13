@@ -24,7 +24,7 @@ impl BinUnit {
         let test_targets = find::DirWalker::new(&self.exec_dir, 
             regex!(r"^(o|a|so)&"));
 
-        let work_dir = build::WorkingDir::new(".punit_tmp");
+        let work_dir = build::WorkingDir::new(".binunit_tmp");
 
         work_dir.write_to_tmp(&generated_src);
         match work_dir.build(&test_targets.walk_map(|path| {

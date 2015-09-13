@@ -1,1 +1,1 @@
-gcc -o punit punit_main.o punit.c prod.c --entry=punit_main -nostartfiles
+gcc -o binunit binunit_main.o binunit.c prod.c --entry=binunit_main -nostartfiles

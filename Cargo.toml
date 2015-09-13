@@ -1,5 +1,5 @@
 [package]
-name = "punit"
+name = "binunit"
 version = "0.1.0"
 authors = ["Matt Friedman <matthew.friedman@mu.edu>"]
 
