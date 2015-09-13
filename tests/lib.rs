@@ -48,9 +48,6 @@ fn assert_all_labels_match(output: &String) {
 
     let labels_from_file = read_test_labels();
 
-    let lines = output.trim().split("\n");
-    assert_eq!(labels_from_file.len(), lines.clone().count());
-
     for label in labels_from_file {
         let regex = regex::Regex::new(&format!("(?m)^{}:.*$", label)).unwrap();
         assert!(regex.is_match(&output));
