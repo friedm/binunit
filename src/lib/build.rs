@@ -4,8 +4,7 @@ use std::fs;
 use std::io::prelude::*;
 use std::io;
 use std::path::PathBuf;
-use std::process::Command;
-use std::process::ExitStatus;
+use std::process::{Command, ExitStatus, Output};
 
 
 pub struct WorkingDir {
@@ -55,10 +54,10 @@ impl WorkingDir {
             .status()
     }
 
-    pub fn run(&self) -> Result<ExitStatus, io::Error> {
+    pub fn run(&self) -> Result<Output, io::Error> {
         
         Command::new(&self.dir.join("binunit").to_str().unwrap())
-            .status()
+            .output()
     }
 }
 
@@ -132,7 +131,7 @@ mod test {
 
         let dir = super::WorkingDir::new(".test_run");
         dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
-        dir.build(&vec!["test/main.c"].to_owned_vec()).unwrap();
+        dir.build(&vec!["tests/testc/passfail.c"].to_owned_vec()).unwrap();
         dir.run().unwrap();
     }
 }

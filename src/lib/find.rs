@@ -74,12 +74,12 @@ mod test {
         let files = test_walker().walk_and_filter();
 
         assert_eq!(1, files.len());
-        assert!(files.contains(&path::PathBuf::from("./test/main.c")));
+        assert!(files.contains(&path::PathBuf::from("./tests/testc/passfail.c")));
     }
 
     fn test_walker() -> super::DirWalker {
 
-        super::DirWalker::new(&path::PathBuf::from("./test"), regex!(r"c"))
+        super::DirWalker::new(&path::PathBuf::from("./tests/testc"), regex!(r"c"))
     }
 
     #[test]
@@ -88,13 +88,13 @@ mod test {
         let files = test_walker().walk_map(|path| super::load(&path));
 
         assert_eq!(1, files.len());
-        assert!(files.contains(&super::load(&path::PathBuf::from("./test/main.c"))));
+        assert!(files.contains(&super::load(&path::PathBuf::from("./tests/testc/passfail.c"))));
     }
 
     #[test]
     fn load() {
 
-        let contents = super::load(&path::PathBuf::from("./test/main.c"));
-        assert_eq!(String::from("///[test]\nvoid test_fn(void) {\n}\n"), contents);
+        let contents = super::load(&path::PathBuf::from("./tests/testc/passfail.c"));
+        assert!(contents.contains("///[test]\nvoid test_pass(void) {\n}\n"));
     }
 }

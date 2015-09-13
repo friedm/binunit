@@ -14,6 +14,7 @@ mod build;
 extern crate regex;
 
 use std::path::PathBuf;
+use std::str;
 
 trait ToOwnedStringVec {
     fn to_owned_vec(&self) -> Vec<String>;
@@ -40,7 +41,7 @@ impl BinUnit {
         }
     }
 
-    pub fn run(&self) {
+    pub fn run(&self) -> Result<String, String> {
 
         let generated_src = self.make_test_source();
 
@@ -57,18 +58,21 @@ impl BinUnit {
             Ok(status) => match status.code() {
                 Some(0) => {
                     match work_dir.run() {
-                        Ok(status) => match status.code() {
-                            Some(0) => (),
-                            Some(code) => println!("test executable returned nonzero exit status: {}", code),
-                            None => println!("test executable command failed")
+                        Ok(output) => match output.status.code() {
+                            Some(0) => match str::from_utf8(&output.stdout[..]) {
+                                Ok(val) => Ok(val.to_owned()),
+                                Err(err) => Err(format!("unable to interpret test output as utf8: {}", err))
+                            },
+                            Some(code) => Err(format!("test executable returned nonzero exit status: {}", code)),
+                            None => Err("test executable command failed".to_owned())
                         },
-                        Err(e) => println!("test executable failed: {}", e)
+                        Err(e) => Err(format!("test executable failed: {}", e))
                     }
                 },
-                Some(code) => println!("gcc returned nonzero exit status: {}", code),
-                None => println!("gcc command failed")
+                Some(code) => Err(format!("gcc returned nonzero exit status: {}", code)),
+                None => Err("gcc command failed".to_owned())
             },
-            Err(e) => println!("gcc command failed: {}\n\tgcc may be missing", e)
+            Err(e) => Err(format!("gcc command failed: {}\n\tgcc may be missing", e))
         }
     }
 
