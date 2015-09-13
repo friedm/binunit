@@ -1,8 +1,8 @@
 use regex;
 
 pub fn parse_testfn_list(files: &Vec<String>) -> Vec<String> {
-    let parser = Parser::new();
 
+    let parser = Parser::new();
     files.iter()
         .map(|file| parser.parse_labels(file))
         .fold(Vec::new(), |mut a, b| { a.extend(b); a })
@@ -14,12 +14,14 @@ struct Parser {
 
 impl Parser {
     pub fn new() -> Parser {
+
         Parser {
             fn_label_regex: Self::label_regex()
         }
     }
 
     fn label_regex() -> regex::Regex {
+
         regex!(r"(?x) #set ignore-whitespace mode
             ///             #c-style comment with extra slash
             .*              #any number of non-newlines
@@ -34,6 +36,7 @@ impl Parser {
     }
 
     pub fn parse_labels(&self, file: &String) -> Vec<String> {
+
         self.fn_label_regex.captures_iter(file)
             .map(|regex_match| String::from(regex_match.at(1).unwrap()))
             .collect::<Vec<_>>()
@@ -46,6 +49,7 @@ mod test {
 
     #[test]
     fn good_fn() {
+
         assert_correct_labels_generated(
             vec![
                 "test_function",
@@ -86,6 +90,7 @@ mod test {
     }
 
     fn assert_correct_labels_generated(expected: Vec<&'static str>, actual: Vec<&'static str>) {
+
         let actual_labels = super::parse_testfn_list(&actual.to_owned_vec());
         let expected_labels = expected.to_owned_vec();
 
@@ -98,6 +103,7 @@ mod test {
 
     #[test]
     fn bad_fn() {
+
         assert_correct_labels_generated(
             vec![],
             vec!["
@@ -116,6 +122,7 @@ mod test {
 
     #[test]
     fn multi_source() {
+
         assert_correct_labels_generated(
             vec![
                 "source1_fn1",

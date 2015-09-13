@@ -37,6 +37,7 @@ impl DirWalker {
     }
 
     fn is_hidden_path(path: &PathBuf) -> bool {
+
         let hidden_path_regex = regex!(r"/\.");
 
         let path = path.clone().into_os_string();
@@ -46,6 +47,7 @@ impl DirWalker {
     }
 
     fn matches_extension(&self, path: &PathBuf) -> bool {
+
         match path.extension() {
             Some(ext) =>
                 self.extension_regex
@@ -53,7 +55,6 @@ impl DirWalker {
                 None => false
         }
     }
-
 }
 
 pub fn load(path: &PathBuf) -> String {

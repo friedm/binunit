@@ -16,8 +16,8 @@ trait ToOwnedStringVec {
 }
 
 impl ToOwnedStringVec for Vec<&'static str> {
-
     fn to_owned_vec(&self) -> Vec<String> {
+
         self.iter()
             .map(|&item| item.to_owned())
             .collect()
