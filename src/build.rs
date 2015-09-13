@@ -42,14 +42,14 @@ impl WorkingDir {
         f.sync_data().unwrap();
     }
 
-    pub fn build(&self) -> Result<ExitStatus, io::Error> {
+    pub fn build(&self, test_targets: &Vec<String>) -> Result<ExitStatus, io::Error> {
 
         Command::new("gcc")
-            .current_dir(&self.dir)
             .arg("-o")
-            .arg("punit")
-            .arg("punit_main.c")
-            .arg("punit.c")
+            .arg(&self.dir.join("punit").to_str().unwrap())
+            .arg(&self.dir.join("punit_main.c").to_str().unwrap())
+            .arg(&self.dir.join("punit.c").to_str().unwrap())
+            .args(&test_targets[..])
             .arg("--entry=punit_main")
             .arg("-nostartfiles")
             .status()
@@ -57,8 +57,7 @@ impl WorkingDir {
 
     pub fn run(&self) -> Result<ExitStatus, io::Error> {
         
-        Command::new("./punit")
-            .current_dir(&self.dir)
+        Command::new(&self.dir.join("punit").to_str().unwrap())
             .status()
     }
 }
@@ -69,6 +68,7 @@ mod test {
     use std::fs::File;
     use std::env;
     use std::path::PathBuf;
+    use ToOwnedStringVec;
 
     #[test]
     fn setup_tmp() {
@@ -123,7 +123,7 @@ mod test {
 
         let dir = super::WorkingDir::new(".punit_tmp");
         dir.write_to_tmp(&"void punit_run_tests(void){}\n".to_owned());
-        dir.build().unwrap();
+        dir.build(&Vec::new()).unwrap();
         assert!(file_exists(&make_dir(".punit_tmp").join("punit")));
     }
 
@@ -132,7 +132,7 @@ mod test {
 
         let dir = super::WorkingDir::new(".test_run");
         dir.write_to_tmp(&"void punit_run_tests(void){}\n".to_owned());
-        dir.build().unwrap();
+        dir.build(&vec!["test/main.c"].to_owned_vec()).unwrap();
         dir.run().unwrap();
     }
 }
