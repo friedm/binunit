@@ -35,6 +35,8 @@ impl WorkingDir {
         Self::write_to(&self.work_dir.join("binunit_gen.c"), generated_src);
         Self::write_to(&self.work_dir.join("binunit.h"), &include_str!("../../csrc/binunit.h").to_owned());
         Self::write_to(&self.work_dir.join("binunit_main.c"), &include_str!("../../csrc/binunit_main.c").to_owned());
+        Self::write_to(&self.work_dir.join("binunit_runtime.h"), &include_str!("../../csrc/binunit_runtime.h").to_owned());
+        Self::write_to(&self.work_dir.join("binunit_runtime.c"), &include_str!("../../csrc/binunit_runtime.c").to_owned());
     }
 
     fn write_to(file_path: &PathBuf, to_write: &String) {
@@ -52,6 +54,7 @@ impl WorkingDir {
             .arg("-o")
             .arg(&self.work_dir.join("binunit").to_str().unwrap())
             .arg(&self.work_dir.join("binunit_main.c").to_str().unwrap())
+            .arg(&self.work_dir.join("binunit_runtime.c").to_str().unwrap())
             .arg(&self.work_dir.join("binunit_gen.c").to_str().unwrap())
             .args(&test_targets[..])
             .arg("--entry=binunit_main")
