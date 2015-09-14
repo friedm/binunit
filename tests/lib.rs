@@ -25,7 +25,9 @@ fn testc_no_compile() {
 
     let binunit = binunit::BinUnit::new(&PathBuf::from("./tests/testc"));
 
-    let output = binunit.run().unwrap();
+    let output = binunit.run().unwrap()
+        .iter()
+        .fold(String::new(), |a,b| format!("{}{}", a, b));
 
     assert_all_labels_match(&output);
     assert_output_does_not_link(&output);
@@ -49,6 +51,7 @@ fn assert_all_labels_match(output: &String) {
     let labels_from_file = read_test_labels();
 
     for label in labels_from_file {
+        println!(">{}", label);
         let regex = regex::Regex::new(&format!("(?m)^{}:.*$", label)).unwrap();
         assert!(regex.is_match(&output));
         assert_eq!(1, regex.captures_iter(&output).count());
@@ -63,9 +66,12 @@ fn testc_compile() {
     compile("assert");
     compile("assert_string");
     compile("assert_mem");
+    compile("segf");
 
     let binunit = binunit::BinUnit::new(&PathBuf::from("./tests"));
-    let output = binunit.run().unwrap();
+    let output = binunit.run().unwrap()
+        .iter()
+        .fold(String::new(), |a,b| format!("{}{}", a, b));
 
     assert_all_labels_match(&output);
     assert_output_satisfies(&output);
@@ -98,5 +104,4 @@ fn assert_output_satisfies(output: &String) {
             _ => panic!("unrecognized test result at line: {}", line)
         }
     }
-
 }

@@ -9,3 +9,5 @@ test_assert_eq_string_fail
 test_assert_mem_eq_pass
 test_assert_mem_eq_pass_2
 test_assert_mem_eq_fail
+test_2_segf
+test_segf

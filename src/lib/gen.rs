@@ -3,10 +3,10 @@
 /// from a list of test function names.
 pub fn generate_test(fn_list: &Vec<String>) -> String {
 
-    format!("{}{}\n\nvoid binunit_run_tests(void) {{\n{}\n}}\n", 
-            "#include \"binunit.h\"\n",
+    format!("{}{}\n\nvoid binunit_run_test_with_label(char *label) {{\n{}\n}}\n", 
+            "#include \"binunit.h\"\n#include <string.h>",
             fn_list.map_and_concat(|label| format!("\nextern void {}(void) __attribute__((weak));", label)),
-            fn_list.map_and_concat(|label| format!("\n\tbinunit_run_test({0}, \"{0}\");", label)))
+            fn_list.map_and_concat(|label| format!("\n\tif (0 == strcmp(label, \"{0}\")) binunit_run_test({0}, \"{0}\");", label)))
         .to_owned()
 }
 
@@ -32,7 +32,7 @@ mod test {
     #[test]
     fn main_test() {
 
-        assert_generated_contains("void binunit_run_tests(void)", test_fn_list());
+        assert_generated_contains("void binunit_run_test_with_label(char *label)", test_fn_list());
     }
 
     fn assert_generated_contains(contents: &str, fn_list: Vec<&'static str>) {
@@ -51,7 +51,7 @@ mod test {
     fn call_test() {
 
         for fn_id in test_fn_list() {
-            assert_generated_contains(&format!("binunit_run_test({0}, \"{0}\");", fn_id)[..], test_fn_list());
+            assert_generated_contains(&format!("if (0 == strcmp(label, \"{0}\")) binunit_run_test({0}, \"{0}\");", fn_id)[..], test_fn_list());
         }
     }
 
@@ -66,6 +66,7 @@ mod test {
     #[test]
     fn include_test() {
 
+        assert_generated_contains("#include <string.h>\n", test_fn_list());
         assert_generated_contains("#include \"binunit.h\"\n", test_fn_list());
     }
 }

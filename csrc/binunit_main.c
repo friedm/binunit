@@ -19,7 +19,7 @@ void binunit_run_test(void (*fn)(), char *name) {
    } else printf("%s: could not link\n", name);
 }
 
-void binunit_main(void) {
-   binunit_run_tests();
+void main(int argc, char **argv) {
+   binunit_run_test_with_label(argv[1]);
    exit(0);
 }

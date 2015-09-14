@@ -57,8 +57,6 @@ impl WorkingDir {
             .arg(&self.work_dir.join("binunit_runtime.c").to_str().unwrap())
             .arg(&self.work_dir.join("binunit_gen.c").to_str().unwrap())
             .args(&test_targets[..])
-            .arg("--entry=binunit_main")
-            .arg("-nostartfiles")
             .status()
     }
 
@@ -66,10 +64,11 @@ impl WorkingDir {
         println!("{}: {:?}", label, debug);
     }
 
-    pub fn run(&self) -> Result<Output, io::Error> {
+    pub fn run(&self, test_label: &String) -> Result<Output, io::Error> {
         
         Command::new(&self.work_dir.join("binunit").to_str().unwrap())
             .current_dir(&self.exec_dir)
+            .arg(&test_label)
             .output()
     }
 }
@@ -134,7 +133,7 @@ mod test {
     fn build() {
 
         let dir = super::WorkingDir::new(".binunit_tmp", &make_dir("."));
-        dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
+        dir.write_to_tmp(&"void binunit_run_test_with_label(char *label){}\n".to_owned());
         dir.build(&Vec::new()).unwrap();
         assert!(file_exists(&make_dir(".binunit_tmp").join("binunit")));
     }
@@ -143,9 +142,9 @@ mod test {
     fn run() {
 
         let dir = super::WorkingDir::new(".test_run", &make_dir("."));
-        dir.write_to_tmp(&"void binunit_run_tests(void){}\n".to_owned());
+        dir.write_to_tmp(&"void binunit_run_test_with_label(char *label){}\n".to_owned());
         dir.build(&vec!["tests/testc/passfail.c"].to_owned_vec()).unwrap();
-        dir.run().unwrap();
+        dir.run(&"test_pass".to_owned()).unwrap();
     }
 }
 
