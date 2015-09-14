@@ -12,8 +12,8 @@ fn main() {
 
     let binunit = binunit::BinUnit::new(&std::env::current_dir().unwrap());
     match binunit.run() {
-        Ok(output) => 
-            print(&output)
+        Ok(mut output) => 
+            print(&mut output)
         ,
         Err(err) => 
             println!("{}\nbinunit failed", err)
@@ -21,11 +21,24 @@ fn main() {
 
 }
 
-pub fn print(output: &Vec<String>) {
+pub fn print(output: &mut Vec<String>) {
 
     let summary = output.iter()
-        .inspect(|result| print_result_colorized(&result.trim().to_owned()))
         .fold((0, 0, 0), |a, b| increment_summary(a, b));
+
+    output.sort();
+
+    println!("");
+
+    for item in output.iter().filter(|item| item.contains(": ok")) {
+        print_result_colorized(&item.trim().to_owned());
+    }
+
+    println!("\n");
+
+    for item in output.iter().filter(|item| item.contains(": failed")) {
+        print_result_colorized(&item.trim().to_owned());
+    }
 
     print_summary(&summary);
 }
@@ -33,7 +46,7 @@ pub fn print(output: &Vec<String>) {
 fn print_result_colorized(output: &String) {
 
     let mut term = term::stdout().unwrap();
-    for capture in regex!(r"(?m)(.*: )(failed|ok)(.*)|.*").captures_iter(output) {
+    for capture in regex!(r"(?m)(.*: )(ok|failed)(.*)|.*").captures_iter(output) {
         match capture.at(2).unwrap_or("") {
             "ok" => {
                 write!(term, "{}", capture.at(1).unwrap()).unwrap();
@@ -52,6 +65,7 @@ fn print_result_colorized(output: &String) {
             _ => writeln!(term, "{}\n", capture.at(0).unwrap()).unwrap()
         }
     }
+
 }
 
 fn increment_summary((total, pass, fail): (i32, i32, i32), result: &String) -> (i32, i32, i32) {
@@ -68,7 +82,7 @@ fn increment_summary((total, pass, fail): (i32, i32, i32), result: &String) -> (
 fn print_summary(&(_, pass, fail): &(i32, i32, i32)) {
 
     let mut term = term::stdout().unwrap();
-    write!(term, "\n\nsummary: ").unwrap();
+    write!(term, "\n\n\t").unwrap();
     match fail { 
         0 => {
             term.fg(term::color::BRIGHT_GREEN).unwrap();
@@ -80,5 +94,5 @@ fn print_summary(&(_, pass, fail): &(i32, i32, i32)) {
         }
     }
     term.reset().unwrap();
-    writeln!(term, " -- {} passed, {} failed\n\n", pass, fail).unwrap();
+    writeln!(term, " -- {} passed, {} failed\n", pass, fail).unwrap();
 }
