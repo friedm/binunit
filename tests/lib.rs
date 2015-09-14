@@ -59,19 +59,25 @@ fn assert_all_labels_match(output: &String) {
 fn testc_compile() {
 
     fs::create_dir("./tests/testc-build").unwrap_or(());
-    Command::new("gcc")
-        .current_dir("./tests")
-        .arg("testc/passfail.c")
-        .arg("-c")
-        .arg("-o")
-        .arg("testc-build/passfail.o")
-        .status().unwrap();
+    compile("passfail");
+    compile("assert");
 
     let binunit = binunit::BinUnit::new(&PathBuf::from("./tests"));
     let output = binunit.run().unwrap();
 
     assert_all_labels_match(&output);
     assert_output_satisfies(&output);
+}
+
+fn compile(test_name: &str) {
+
+     Command::new("gcc")
+        .current_dir("./tests")
+        .arg(&format!("testc/{}.c", test_name)[..])
+        .arg("-c")
+        .arg("-o")
+        .arg(&format!("testc-build/{}.o", test_name)[..])
+        .status().unwrap();
 }
 
 fn assert_output_satisfies(output: &String) {

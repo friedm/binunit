@@ -5,7 +5,7 @@ void test_pass(void) {
 }
 
 ///[test]
-void test_assert_fail(void) {
+void test_assert_fail_fail(void) {
    assert_fail();
 }
 

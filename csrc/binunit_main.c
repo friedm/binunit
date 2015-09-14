@@ -7,7 +7,7 @@
 void binunit_run_test(void (*fn)(), char *name) {
    if (fn) { 
       current_test_failed = 0;
-      current_test_failure_reason = "test passed";
+      sprintf(current_test_failure_reason, "test passed");
 
       fn();
 
