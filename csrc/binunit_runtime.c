@@ -16,10 +16,17 @@ void assert_eq(int expected, int actual) {
    }
 }
 
-void assert_str_eq(char *expected, char *actual) {
+void assert_str_eq(const char *expected, const char *actual) {
    if (0 != strcmp(expected, actual)) {
       current_test_failed = 1;
       sprintf(current_test_failure_reason, "assert_str_eq failed -- expected \"%s\", got \"%s\"\n", expected, actual);
+   }
+}
+
+void assert_mem_eq(const void *expected, const void *actual, int len) {
+   if (0 != memcmp(expected, actual, len)) {
+      current_test_failed = 1;
+      sprintf(current_test_failure_reason, "assert_mem_eq failed -- %d bytes at \"%p\", \"%p\" not equal\n", len, expected, actual);
    }
 }
 

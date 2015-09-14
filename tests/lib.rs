@@ -62,6 +62,7 @@ fn testc_compile() {
     compile("passfail");
     compile("assert");
     compile("assert_string");
+    compile("assert_mem");
 
     let binunit = binunit::BinUnit::new(&PathBuf::from("./tests"));
     let output = binunit.run().unwrap();
