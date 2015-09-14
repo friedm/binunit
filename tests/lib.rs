@@ -61,6 +61,7 @@ fn testc_compile() {
     fs::create_dir("./tests/testc-build").unwrap_or(());
     compile("passfail");
     compile("assert");
+    compile("assert_string");
 
     let binunit = binunit::BinUnit::new(&PathBuf::from("./tests"));
     let output = binunit.run().unwrap();
@@ -84,14 +85,16 @@ fn assert_output_satisfies(output: &String) {
 
     let regex = regex!(r"(?m)^(.*):\s*(.*)\s*$");
     for cap in regex.captures_iter(output) {
+        let line = cap.at(0).unwrap().clone();
         let label = cap.at(1).unwrap();
         let test_result = cap.at(2).unwrap();
 
+        println!(">{}", line);
         match test_result {
             "ok" => assert!(label.contains("pass")),
             "failed" => assert!(label.contains("fail")),
             "failed (segfault)" => assert!(label.contains("segf")),
-            _ => panic!("unrecognized test result at line: {}", test_result)
+            _ => panic!("unrecognized test result at line: {}", line)
         }
     }
 

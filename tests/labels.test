@@ -4,3 +4,5 @@ test_assert_eq_int_pass
 test_assert_eq_int_fail
 test_assert_pass
 test_assert_fail
+test_assert_eq_string_pass
+test_assert_eq_string_fail
