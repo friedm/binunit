@@ -37,10 +37,9 @@ fn assert_output_does_not_link(output: &String) {
 
     let lines = output.trim().split("\n");
     for line in lines {
-        assert!(line.contains("could not link"));
+        assert!(line.contains("failed (could not link)"));
         assert!(!line.contains("ok"));
-        assert!(!line.contains("failed"));
-        assert!(!line.contains("segfaulted"));
+        assert!(!line.contains("failed (segfault)"));
     }
 }
 
@@ -75,6 +74,7 @@ fn testc_compile() {
 
     assert_all_labels_match(&output);
     assert_output_satisfies(&output);
+    panic!();
 }
 
 fn compile(test_name: &str) {

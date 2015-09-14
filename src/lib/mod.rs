@@ -1,9 +1,7 @@
 #![deny(warnings)]
-
 #![feature(plugin)]
 #![feature(fs_walk)]
 #![feature(path_relative_from)]
-
 #![plugin(regex_macros)]
 
 pub mod find;
