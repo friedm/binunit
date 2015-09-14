@@ -74,7 +74,6 @@ fn testc_compile() {
 
     assert_all_labels_match(&output);
     assert_output_satisfies(&output);
-    panic!();
 }
 
 fn compile(test_name: &str) {
